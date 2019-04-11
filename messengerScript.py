@@ -99,11 +99,9 @@ except:
 for n in range(len(conversations)):
     print(f'{n + 1}. ' + conversations[n])
 
-prompt = input(
-    'Is the message you would like to select in the list or would you like to search? (Y)/(N): '
-).lower()
+prompt = input('Would you like to select from this list? (Y)/(N): ').lower()
 
-if prompt == 'y':
+if prompt == 'n':
     # find message
     message_input_form = browser.find_element_by_xpath(
         '//*[@aria-label="Search Messenger"]')
@@ -153,8 +151,18 @@ if prompt == 'y':
         print(f'{selection_query} selected...')
     else:
         print('Contact not found')
-elif prompt == 'n':
-    print(conversations)
+elif prompt == 'y':
+    number = int(
+        input('Enter the number of the message you would like to select: '))
+
+    choice = browser.find_element_by_xpath(
+        f'//*[@aria-label="Conversation list"]/li[{number}]/div/a/div/div'
+    ).get_attribute('data-tooltip-content')
+
+    browser.find_element_by_xpath(
+        f'//*[@aria-label="Conversation list"]/li[{number}]/div/a/div/div'
+    ).click()
+    print(f'{choice} selected...')
 
 print('Done.')
 browser.close()
