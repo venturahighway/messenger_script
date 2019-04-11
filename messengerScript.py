@@ -209,7 +209,6 @@ time.sleep(1)
 is_next = True
 while is_next:
     # get the next piece of media
-
     try:
         next_btn: webdriver = browser.find_element_by_xpath(
             '//*[@class="_ohf rfloat"]/a')
@@ -227,4 +226,4 @@ while is_next:
         is_next = False
 
 print('Done.')
-# browser.close()
+browser.close()
