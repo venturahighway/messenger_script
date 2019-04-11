@@ -38,13 +38,13 @@ browser: webdriver = webdriver.Chrome(path, options=options)
 browser.implicitly_wait(10)
 browser.get(url)
 try:
-    login_form: webdriver = browser.find_element_by_name('email')
+    login_form: webdriver = browser.find_element(By.NAME, 'email')
     login_form.send_keys(email)
     print('Login form found, inputting email...')
 except:
     print('Was not able to find login form.')
 try:
-    password_form: webdriver = browser.find_element_by_name('pass')
+    password_form: webdriver = browser.find_element(By.NAME, 'pass')
     password_form.send_keys(password)
     print('Password form found, inputting password...')
 except:
@@ -62,14 +62,15 @@ else:
 
 # navigate to messenger
 try:
-    messenger_icon: webdriver = browser.find_element_by_name('mercurymessages')
+    messenger_icon: webdriver = browser.find_element(By.NAME,
+                                                     'mercurymessages')
     messenger_icon.click()
     print('Messenger icon selected...')
 except:
     print('Was not able to find messenger icon.')
 try:
-    messenger_link: webdriver = browser.find_element_by_link_text(
-        'See all in Messenger')
+    messenger_link: webdriver = browser.find_element(By.LINK_TEXT,
+                                                     'See all in Messenger')
     messenger_link.click()
     print('Messenger link clicked...')
 except:
@@ -79,14 +80,15 @@ except:
 try:
     conversations: list = []
     n: int = 1
-    conversation = browser.find_elements_by_xpath(
-        '//*[@aria-label="Conversation list"]/li')
+    conversation = browser.find_elements(
+        By.XPATH, '//*[@aria-label="Conversation list"]/li')
 
     num_conversation = len(conversation)
     print(f'First {num_conversation} messages found:')
 
     while n < len(conversation) + 1:
-        name = browser.find_element_by_xpath(
+        name = browser.find_element(
+            By.XPATH,
             f'//*[@aria-label="Conversation list"]/li[{n}]/div/a/div/div'
         ).get_attribute('data-tooltip-content')
         conversations.append(name)
@@ -101,8 +103,8 @@ prompt = input('Would you like to select from this list? (Y)/(N): ').lower()
 
 if prompt == 'n':
     # find message
-    message_input_form = browser.find_element_by_xpath(
-        '//*[@aria-label="Search Messenger"]')
+    message_input_form = browser.find_element(
+        By.XPATH, '//*[@aria-label="Search Messenger"]')
 
     query = input('Enter your contact name: ')
     message_input_form.send_keys(query)
@@ -119,7 +121,7 @@ if prompt == 'n':
     try:
         contacts = []
         n = 1
-        ul = browser.find_elements_by_xpath(f'//*[@class="_29hk"][{x}]/ul/li')
+        ul = browser.find_elements(By.XPATH, f'//*[@class="_29hk"][{x}]/ul/li')
         # print(f'.//*[@class="_29hk"][{x}]')
         # for li in ul:
         #     name = browser.find_element_by_xpath(
@@ -127,7 +129,8 @@ if prompt == 'n':
         #     contacts.append(name)
         #     n += 1
         while n < len(ul) + 1:
-            name = browser.find_element_by_xpath(
+            name = browser.find_element(
+                By.XPATH,
                 f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div'
             ).text
             contacts.append(name)
@@ -143,8 +146,8 @@ if prompt == 'n':
     selection_query = input('Choose contact from list: ')
 
     if selection_query in contacts:
-        selection = browser.find_element_by_xpath(
-            f'//div[text()="{selection_query}"]')
+        selection = browser.find_element(By.XPATH,
+                                         f'//div[text()="{selection_query}"]')
         selection.click()
         print(f'{selection_query} selected...')
     else:
@@ -153,11 +156,13 @@ elif prompt == 'y':
     number = int(
         input('Enter the number of the message you would like to select: '))
 
-    choice = browser.find_element_by_xpath(
+    choice = browser.find_element(
+        By.XPATH,
         f'//*[@aria-label="Conversation list"]/li[{number}]/div/a/div/div'
     ).get_attribute('data-tooltip-content')
 
-    browser.find_element_by_xpath(
+    browser.find_element(
+        By.XPATH,
         f'//*[@aria-label="Conversation list"]/li[{number}]/div/a/div/div'
     ).click()
 
@@ -165,8 +170,8 @@ elif prompt == 'y':
 
 # selects first photo
 try:
-    photo: webdriver = browser.find_element_by_xpath(
-        './/*[@aria-label="photo"][1]')
+    photo: webdriver = browser.find_element(By.XPATH,
+                                            './/*[@aria-label="photo"][1]')
     print('1st instance of media selected...')
     photo.click()
 except:
@@ -177,8 +182,8 @@ except:
 def Download():
     # find src url
     try:
-        img: webdriver = browser.find_element_by_xpath(
-            '//*[@class="_4-od"]/div/img')
+        img: webdriver = browser.find_element(By.XPATH,
+                                              '//*[@class="_4-od"]/div/img')
         src: str = img.get_attribute('src')
     except:
         print('Could not find media.')
@@ -208,8 +213,8 @@ is_next = True
 while is_next:
     # get the next piece of media
     try:
-        next_btn: webdriver = browser.find_element_by_xpath(
-            '//*[@class="_ohf rfloat"]/a')
+        next_btn: webdriver = browser.find_element(
+            By.XPATH, '//*[@class="_ohf rfloat"]/a')
         next_btn_state: str = next_btn.get_attribute('aria-disabled')
         print(next_btn_state)
     except:
