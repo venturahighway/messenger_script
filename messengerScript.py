@@ -18,9 +18,10 @@ options: Options = Options()
 prefs: dict = {"profile.default_content_setting_values.notifications": 2}
 options.add_experimental_option("prefs", prefs)
 # if true enables headless chrome
-options.headless = True
+# options.headless = True
 
-path: str = '/Users/arlandtorres/dev/projects/messengerScript/chromedriver'
+# path: str = '/Users/arlandtorres/dev/projects/messengerScript/chromedriver'
+path: str = r'C:\Users\AVTORRES\messenger_script\chromedriver.exe'
 url: str = 'https://www.facebook.com'
 # creates media directory
 os.makedirs('media', exist_ok=True)
