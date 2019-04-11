@@ -162,7 +162,69 @@ elif prompt == 'y':
     browser.find_element_by_xpath(
         f'//*[@aria-label="Conversation list"]/li[{number}]/div/a/div/div'
     ).click()
+
     print(f'{choice} selected...')
 
+# selects first photo
+try:
+    photo: webdriver = browser.find_element_by_xpath(
+        './/*[@aria-label="photo"][1]')
+    print('1st instance of media selected...')
+    photo.click()
+except:
+    print('Could not find media.')
+
+
+# download media
+def Download():
+    # find src url
+    try:
+        img: webdriver = browser.find_element_by_xpath(
+            '//*[@class="_4-od"]/div/img')
+        src: str = img.get_attribute('src')
+    except:
+        print('Could not find media.')
+    # get image name
+    ext: str = '.jpg'
+    url_part: str = src[:src.find(ext) + len(ext)]
+    # returns https://scontent-lht6-1.xx.fbcdn.net/v/t1.15752-9/56669445_426465788110092_783547496742780928_n.jpg
+    # url_part_2 = url_part.split('/')
+    fwd_slash: str = '/'
+    img_name: str = url_part[url_part.rfind(fwd_slash):]
+    # print(img_name)
+    res = requests.get(src)
+    res.raise_for_status()
+    print(f'Downloading image: ' + img_name)
+    # save media to ./media
+    img_file = open(os.path.join('media', os.path.basename(img_name)), 'wb')
+    for chunk in res.iter_content(100000):
+        img_file.write(chunk)
+    img_file.close()
+    print(f'Saving image: ' + img_name + ' to /media...')
+
+
+# download media loop
+Download()
+time.sleep(1)
+is_next = True
+while is_next:
+    # get the next piece of media
+
+    try:
+        next_btn: webdriver = browser.find_element_by_xpath(
+            '//*[@class="_ohf rfloat"]/a')
+        next_btn_state: str = next_btn.get_attribute('aria-disabled')
+        print(next_btn_state)
+    except:
+        print('Next button not found.')
+
+    if next_btn_state == 'false':
+        next_btn.click()
+        print('Next media selected...')
+        Download()
+    elif next_btn_state == 'true':
+        print('Next media not found.')
+        is_next = False
+
 print('Done.')
-browser.close()
+# browser.close()
