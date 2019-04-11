@@ -78,76 +78,74 @@ except:
     print('Could not find messenger link.')
 
 # prints list of conversations
-# conversations: list = []
-# n: int = 1
-# conversation = browser.find_elements_by_xpath(
-#     '//*[@aria-label="Conversation list"]/li')
-
-# num_conversation = len(conversation)
-# print('Number of conversations found: ' + str(num_conversation))
-
-# try:
-#     for c in conversation:
-#         name = c.find_element_by_xpath(
-#             f'//*[@aria-label="Conversation list"]/li[{str(n)}]/div/a/div/div'
-#         ).get_attribute('data-tooltip-content')
-#         conversations.append(name)
-#         n += 1
-# except:
-#     print('Conversations not found')
-
-# print(conversations)
-
-# find message
-message_input_form = browser.find_element_by_xpath(
-    '//*[@aria-label="Search Messenger"]')
-
-query = input('Enter your contact name: ')
-message_input_form.send_keys(query)
-
-
-def getX(query):
-    if len(query) == 1:
-        return 1
-    elif len(query) > 1:
-        return 2
-
-
-x = getX(query)
-# print('x = ' + str(x))
-
 try:
-    contacts = []
-    n = 1
-    ul = browser.find_elements_by_xpath(f'//*[@class="_29hk"][{x}]/ul/li')
-    # print(f'.//*[@class="_29hk"][{x}]')
-    # for li in ul:
-    #     name = browser.find_element_by_xpath(
-    #         f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div').text
-    #     contacts.append(name)
-    #     n += 1
-    while n < len(ul) + 1:
+    conversations: list = []
+    n: int = 1
+    conversation = browser.find_elements_by_xpath(
+        '//*[@aria-label="Conversation list"]/li')
+
+    num_conversation = len(conversation)
+    print('Number of conversations found: ' + str(num_conversation))
+
+    while n < len(conversation) + 1:
         name = browser.find_element_by_xpath(
-            f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div').text
-        contacts.append(name)
+            f'//*[@aria-label="Conversation list"]/li[{n}]/div/a/div/div'
+        ).get_attribute('data-tooltip-content')
+        conversations.append(name)
         n += 1
 except:
-    print('Failed')
+    print('Conversations not found')
 
-print(f'Contacts found in \'{query}\':')
-for name in range(len(contacts)):
-    print(contacts[name])
+print(conversations)
 
-# select message
-selection_query = input('Choose contact from list: ')
+# find message
+# message_input_form = browser.find_element_by_xpath(
+#     '//*[@aria-label="Search Messenger"]')
 
-if selection_query in contacts:
-    selection = browser.find_element_by_xpath(
-        f'//div[text()="{selection_query}"]')
-    selection.click()
-    print(f'{selection_query} selected...')
-else:
-    print('Contact not found')
+# query = input('Enter your contact name: ')
+# message_input_form.send_keys(query)
+
+# def getX(query):
+#     if len(query) == 1:
+#         return 1
+#     elif len(query) > 1:
+#         return 2
+
+# x = getX(query)
+# # print('x = ' + str(x))
+
+# try:
+#     contacts = []
+#     n = 1
+#     ul = browser.find_elements_by_xpath(f'//*[@class="_29hk"][{x}]/ul/li')
+#     # print(f'.//*[@class="_29hk"][{x}]')
+#     # for li in ul:
+#     #     name = browser.find_element_by_xpath(
+#     #         f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div').text
+#     #     contacts.append(name)
+#     #     n += 1
+#     while n < len(ul) + 1:
+#         name = browser.find_element_by_xpath(
+#             f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div').text
+#         contacts.append(name)
+#         n += 1
+# except:
+#     print('Failed')
+
+# print(f'Contacts found in \'{query}\':')
+# for name in range(len(contacts)):
+#     print(contacts[name])
+
+# # select message
+# selection_query = input('Choose contact from list: ')
+
+# if selection_query in contacts:
+#     selection = browser.find_element_by_xpath(
+#         f'//div[text()="{selection_query}"]')
+#     selection.click()
+#     print(f'{selection_query} selected...')
+# else:
+#     print('Contact not found')
 
 print('Done.')
 browser.close()
