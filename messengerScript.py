@@ -20,8 +20,8 @@ options.add_experimental_option("prefs", prefs)
 # if true enables headless chrome
 # options.headless = True
 
-# path: str = '/Users/arlandtorres/dev/projects/messengerScript/chromedriver'
-path: str = r'C:\Users\AVTORRES\messenger_script\chromedriver.exe'
+path: str = '/Users/arlandtorres/dev/projects/messengerScript/chromedriver'
+# path: str = r'C:\Users\AVTORRES\messenger_script\chromedriver.exe'
 url: str = 'https://www.facebook.com'
 # creates media directory
 os.makedirs('media', exist_ok=True)
@@ -30,8 +30,10 @@ os.makedirs('media', exist_ok=True)
 user: str = getuser()
 print('Hello ' + user + '!')
 
-email: str = input('Email: ')
-password: str = getpass(prompt='Password: ')
+# email: str = input('Email: ')
+# password: str = getpass(prompt='Password: ')
+email = 'arland.torres@outlook.com'
+password = 'AFgt9597*'
 
 # log into facebook
 browser: webdriver = webdriver.Chrome(path, options=options)
@@ -75,139 +77,42 @@ try:
 except:
     print('Could not find messenger link.')
 
-# prints list of conversations
-# conversations: list = []
-# n: int = 1
-# conversation = browser.find_elements_by_xpath(
-#     '//*[@aria-label="Conversation list"]/li')
+# select message
+message_input_form = browser.find_element_by_xpath(
+    '//*[@aria-label="Search Messenger"]')
+query = input('Enter search query: ')
+message_input_form.send_keys(query)
 
-# num_conversation = len(conversation)
-# print('Number of conversations found: ' + str(num_conversation))
 
-# try:
-#     for c in conversation:
-#         name = c.find_element_by_xpath(
-#             f'//*[@aria-label="Conversation list"]/li[{str(n)}]/div/a/div/div'
-#         ).get_attribute('data-tooltip-content')
-#         conversations.append(name)
-#         n += 1
-# except:
-#     print('Conversations not found')
+def getX(query):
+    if len(query) == 1:
+        return 1
+    elif len(query) > 1:
+        return 2
 
-# print(conversations)
 
-# search messenger
-# try:
-#     search_form = browser.find_element_by_xpath(
-#         '//*[@aria-label="Search Messenger"]')
-#     print('Search form found.')
-# except:
-#     print('Could not find Search form')
+x = getX(query)
 
-# query = input('Input a contact or group chat name: ')
-# search_form.send_keys(query)
+print('x = ' + str(x))
 
-# def get_contacts():
-#     try:
-#         if len(query) == 1:
-#             xpath: str = '//*[@class="_29hk"][1]'
-#             return xpath
-#         elif len(query) > 1:
-#             xpath: str = '//*[@class="_29hk"][2]'
-#             return xpath
-#     except:
-#         print('Contacts not found.')
-
-# xpath = get_contacts()
-
-# print(xpath + '/ul/li[i]/a/div/div[2]/div/div')
-
-# contacts_list = browser.find_elements_by_xpath(f'{xpath}')
-# print('Number of contacts in ' + query + ': ' + str(len(contacts_list)))
-
-# try:
-#     contacts = []
-#     i: int = 1
-#     if len(query) == 1:
-#         contact_list = browser.find_element_by_xpath('//*[@class="_29hk"][1]')
-#         x = 1
-#         print(str(x))
-#     elif len(query) > 1:
-#         contact_list = browser.find_element_by_xpath('//*[@class="_29hk"][2]')
-#         x = 2
-#         print(str(x))
-#     for c in contact_list:
-#         name = c.find_element_by_xpath(
-#             f'//*[@class="_29hk"][{str(x)}]/ul/li[{str(i)}]/a/div/div[2]/div/div'
-#         ).text
-#         contacts.append(name)
-#         i += 1
-# except:
-#     print('Could not find names.')
-
-# print(contacts)
-
-# //*[@class="_29hl"]/li[]
-
-# //*[@class="_29hk"][1]/ul/li[1]/a/div/div[2]/div/div
-
-# selects first photo
 try:
-    photo: webdriver = browser.find_element_by_xpath(
-        './/*[@aria-label="photo"]')
-    print('1st instance of media selected...')
-    photo.click()
+    contacts = []
+    n = 1
+
+    ul = browser.find_elements_by_xpath(f'//*[@class="_29hk"][{x}]/ul/li')
+    print(f'.//*[@class="_29hk"][{x}]')
+
+    for li in ul:
+
+        name = browser.find_element_by_xpath(
+            f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div').text
+
+        contacts.append(name)
+        n += 1
 except:
-    print('Could not find media.')
+    print('Failed')
 
-
-# download media
-def Download():
-    # find src url
-    try:
-        img: webdriver = browser.find_element_by_xpath(
-            '//*[@class="_4-od"]/div/img')
-        src: str = img.get_attribute('src')
-    except:
-        print('Could not find media.')
-    # get image name
-    ext: str = '.jpg'
-    url_part: str = src[:src.find(ext) + len(ext)]
-    # returns https://scontent-lht6-1.xx.fbcdn.net/v/t1.15752-9/56669445_426465788110092_783547496742780928_n.jpg
-    # url_part_2 = url_part.split('/')
-    fwd_slash: str = '/'
-    img_name: str = url_part[url_part.rfind(fwd_slash):]
-    print(img_name)
-    res = requests.get(src)
-    res.raise_for_status()
-    print(f'Downloading image: ' + img_name)
-    # save media to ./media
-    img_file = open(os.path.join('media', os.path.basename(img_name)), 'wb')
-    for chunk in res.iter_content(100000):
-        img_file.write(chunk)
-    img_file.close()
-    print(f'Saving ' + img_name + ' to /media...')
-
-
-# download media loop
-is_next = True
-while is_next:
-    Download()
-    # get the next piece of media
-    try:
-        next_btn: webdriver = browser.find_element_by_xpath(
-            '//*[@class="_ohf rfloat"]/a')
-        next_btn_state: str = next_btn.get_attribute('aria-disabled')
-        print('next_btn_state is ' + next_btn_state)
-    except:
-        print('Next button not found.')
-    if next_btn_state == 'true':
-        print('Next media not found.')
-        is_next = False
-    elif next_btn_state == 'false':
-        next_btn.click()
-        print('Next media selected...')
-        Download()
+print(contacts)
 
 print('Done.')
 browser.close()
