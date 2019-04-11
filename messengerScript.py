@@ -18,7 +18,7 @@ options: Options = Options()
 prefs: dict = {"profile.default_content_setting_values.notifications": 2}
 options.add_experimental_option("prefs", prefs)
 # if true enables headless chrome
-# options.headless = True
+options.headless = True
 
 path: str = '/Users/arlandtorres/dev/projects/messengerScript/chromedriver'
 # path: str = r'C:\Users\AVTORRES\messenger_script\chromedriver.exe'
@@ -77,10 +77,32 @@ try:
 except:
     print('Could not find messenger link.')
 
-# select message
+# prints list of conversations
+# conversations: list = []
+# n: int = 1
+# conversation = browser.find_elements_by_xpath(
+#     '//*[@aria-label="Conversation list"]/li')
+
+# num_conversation = len(conversation)
+# print('Number of conversations found: ' + str(num_conversation))
+
+# try:
+#     for c in conversation:
+#         name = c.find_element_by_xpath(
+#             f'//*[@aria-label="Conversation list"]/li[{str(n)}]/div/a/div/div'
+#         ).get_attribute('data-tooltip-content')
+#         conversations.append(name)
+#         n += 1
+# except:
+#     print('Conversations not found')
+
+# print(conversations)
+
+# find message
 message_input_form = browser.find_element_by_xpath(
     '//*[@aria-label="Search Messenger"]')
-query = input('Enter search query: ')
+
+query = input('Enter your contact\'s name: ')
 message_input_form.send_keys(query)
 
 
@@ -92,27 +114,35 @@ def getX(query):
 
 
 x = getX(query)
-
-print('x = ' + str(x))
+# print('x = ' + str(x))
 
 try:
     contacts = []
     n = 1
-
     ul = browser.find_elements_by_xpath(f'//*[@class="_29hk"][{x}]/ul/li')
-    print(f'.//*[@class="_29hk"][{x}]')
-
+    # print(f'.//*[@class="_29hk"][{x}]')
     for li in ul:
-
         name = browser.find_element_by_xpath(
             f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div').text
-
         contacts.append(name)
         n += 1
 except:
     print('Failed')
 
-print(contacts)
+print(f'Contacts found in \'{query}\':')
+for name in range(len(contacts)):
+    print(contacts[name])
+
+# select message
+selection_query = input('Enter contact name: ')
+
+if selection_query in contacts:
+    selection = browser.find_element_by_xpath(
+        f'//div[text()="{selection_query}"]')
+    selection.click()
+    print(f'{selection_query} selected...')
+else:
+    print('Contact not found')
 
 print('Done.')
 browser.close()
