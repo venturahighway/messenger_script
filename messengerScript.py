@@ -102,7 +102,7 @@ except:
 message_input_form = browser.find_element_by_xpath(
     '//*[@aria-label="Search Messenger"]')
 
-query = input('Enter your contact\'s name: ')
+query = input('Enter your contact name: ')
 message_input_form.send_keys(query)
 
 
@@ -121,7 +121,12 @@ try:
     n = 1
     ul = browser.find_elements_by_xpath(f'//*[@class="_29hk"][{x}]/ul/li')
     # print(f'.//*[@class="_29hk"][{x}]')
-    for li in ul:
+    # for li in ul:
+    #     name = browser.find_element_by_xpath(
+    #         f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div').text
+    #     contacts.append(name)
+    #     n += 1
+    while n < len(ul) + 1:
         name = browser.find_element_by_xpath(
             f'//*[@class="_29hk"][{x}]/ul/li[{n}]/a/div/div[2]/div/div').text
         contacts.append(name)
@@ -134,7 +139,7 @@ for name in range(len(contacts)):
     print(contacts[name])
 
 # select message
-selection_query = input('Enter contact name: ')
+selection_query = input('Choose contact from list: ')
 
 if selection_query in contacts:
     selection = browser.find_element_by_xpath(
