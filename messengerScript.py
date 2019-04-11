@@ -30,10 +30,8 @@ os.makedirs('media', exist_ok=True)
 user: str = getuser()
 print('Hello ' + user + '!')
 
-# email: str = input('Email: ')
-# password: str = getpass(prompt='Password: ')
-email = 'arland.torres@outlook.com'
-password = 'AFgt9597*'
+email: str = input('Email: ')
+password: str = getpass(prompt='Password: ')
 
 # log into facebook
 browser: webdriver = webdriver.Chrome(path, options=options)
