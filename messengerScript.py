@@ -178,37 +178,110 @@ except:
     print('Could not find media.')
 
 
-# download media
-def Download():
-    # find src url
+def CheckMediaType():
+    # div_class = browser.find_element(By.XPATH, '//*[@class="_4-od"]/div')
     try:
-        img: webdriver = browser.find_element(By.XPATH,
-                                              '//*[@class="_4-od"]/div/img')
-        src: str = img.get_attribute('src')
+        if browser.find_element(
+                By.XPATH,
+                '//*[@class="_4-od"]/div/img').get_attribute('src') != None:
+            return 1
+        elif browser.find_element(By.XPATH, '//*[@class="_4-od"]/div/div/video'
+                                  ).get_attribute('src') != None:
+            return 2
+        else:
+            print('Element not found')
     except:
-        print('Could not find media.')
-    # get image name
-    ext: str = '.jpg'
-    url_part: str = src[:src.find(ext) + len(ext)]
-    # returns https://scontent-lht6-1.xx.fbcdn.net/v/t1.15752-9/56669445_426465788110092_783547496742780928_n.jpg
-    # url_part_2 = url_part.split('/')
-    fwd_slash: str = '/'
-    img_name: str = url_part[url_part.rfind(fwd_slash):]
-    # print(img_name)
-    res = requests.get(src)
-    res.raise_for_status()
-    print(f'Downloading image: ' + img_name)
-    # save media to ./media
-    img_file = open(os.path.join('media', os.path.basename(img_name)), 'wb')
-    for chunk in res.iter_content(100000):
-        img_file.write(chunk)
-    img_file.close()
-    print(f'Saving image: ' + img_name + ' to /media...')
+        print('No image or video')
 
+
+# download media
+def Download(t):
+    if t == 1:
+        # find src url
+        try:
+            img: webdriver = browser.find_element(
+                By.XPATH, '//*[@class="_4-od"]/div/img')
+            src: str = img.get_attribute('src')
+            # get image name
+            ext: str = '.jpg'
+            url_part: str = src[:src.find(ext) + len(ext)]
+            # returns https://scontent-lht6-1.xx.fbcdn.net/v/t1.15752-9/56669445_426465788110092_783547496742780928_n.jpg
+
+            fwd_slash: str = '/'
+            img_name: str = url_part[url_part.rfind(fwd_slash):]
+
+            res = requests.get(src)
+            res.raise_for_status()
+            print('Downloading image: ' + img_name)
+
+            # save media to ./media
+            img_file = open(
+                os.path.join('media', os.path.basename(img_name)), 'wb')
+            for chunk in res.iter_content(100000):
+                img_file.write(chunk)
+            img_file.close()
+            print('Saving image: ' + img_name + ' to /media...')
+        except:
+            print('Could not find image.')
+    elif t == 2:
+        try:
+            video = browser.find_element(By.XPATH,
+                                         '//*[@class="_4-od"]/div/div/video')
+            src = video.get_attribute('src')
+
+            ext = '.mp4'
+            url_part = src[:src.find(ext) + len(ext)]
+
+            fwd_slash: str = '/'
+            video_name: str = url_part[url_part.rfind(fwd_slash):]
+
+            res = requests.get(src)
+            res.raise_for_status()
+            print('Downloading video: ' + video_name)
+
+            video_file = open(
+                os.path.join('media', os.path.basename(video_name)), 'wb')
+            for chunk in res.iter_content(100000):
+                video_file.write(chunk)
+            video_file.close()
+            print('Saving video: ' + video_name + ' to /media...')
+        except:
+            print('Could not find video')
+
+
+# def DownloadVideo(t):
+#     if t == 2:
+#         try:
+#             video = browser.find_element(By.XPATH,
+#                                          '//*[@class="_4-od"]/div/div/video')
+#             src = video.get_attribute('src')
+
+#             ext = '.mp4'
+#             url_part = src[:src.find(ext) + len(ext)]
+
+#             fwd_slash: str = '/'
+#             video_name: str = url_part[url_part.rfind(fwd_slash):]
+
+#             res = requests.get(src)
+#             res.raise_for_status()
+#             print('Downloading video: ' + video_name)
+
+#             video_file = open(
+#                 os.path.join('media', os.path.basename(video_name)), 'wb')
+#             for chunk in res.iter_content(100000):
+#                 video_file.write(chunk)
+#             video_file.close()
+#             print('Saving video: ' + video_name + ' to /media...')
+#         except:
+#             print('Could not find video')
+#     else:
+#         print('Argument passed in is not video')
 
 # download media loop
-Download()
-time.sleep(1)
+t = CheckMediaType()
+print(str(t))
+Download(t)
+# time.sleep(1)
 is_next = True
 while is_next:
     # get the next piece of media
@@ -223,7 +296,10 @@ while is_next:
     if next_btn_state == 'false':
         next_btn.click()
         print('Next media selected...')
-        Download()
+        time.sleep(2)
+        t = CheckMediaType()
+        print(str(t))
+        Download(t)
     elif next_btn_state == 'true':
         print('Next media not found.')
         is_next = False
