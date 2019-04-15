@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
 from getpass import getpass
 from getpass import getuser
 import requests
@@ -177,26 +178,39 @@ try:
 except:
     print('Could not find media.')
 
+# def CheckMediaType():
+#     # div_class = browser.find_element(By.XPATH, '//*[@class="_4-od"]/div')
+
+#     if browser.find_element(
+#             By.XPATH,
+#             '//*[@class="_4-od"]/div/img').get_attribute('src') != None:
+#         return 'image'
+#     elif browser.find_element(
+#             By.XPATH,
+#             '//*[@class="_4-od"]/div/div/video').get_attribute('src') != None:
+#         return 'video'
+#     else:
+#         print('No image or video')
+
 
 def CheckMediaType():
     # div_class = browser.find_element(By.XPATH, '//*[@class="_4-od"]/div')
+
     try:
-        if browser.find_element(
-                By.XPATH,
-                '//*[@class="_4-od"]/div/img').get_attribute('src') != None:
-            return 1
-        elif browser.find_element(By.XPATH, '//*[@class="_4-od"]/div/div/video'
-                                  ).get_attribute('src') != None:
-            return 2
-        else:
-            print('Element not found')
-    except:
-        print('No image or video')
+        browser.find_element(
+            By.XPATH,
+            '//*[@class="_4-od"]/div/img').get_attribute('src') != None
+        return 'image'
+    except NoSuchElementException:
+        browser.find_element(
+            By.XPATH,
+            '//*[@class="_4-od"]/div/div/video').get_attribute('src') != None
+        return 'video'
 
 
 # download media
 def Download(t):
-    if t == 1:
+    if t == 'image':
         # find src url
         try:
             img: webdriver = browser.find_element(
@@ -223,7 +237,7 @@ def Download(t):
             print('Saving image: ' + img_name + ' to /media...')
         except:
             print('Could not find image.')
-    elif t == 2:
+    elif t == 'video':
         try:
             video = browser.find_element(By.XPATH,
                                          '//*[@class="_4-od"]/div/div/video')
@@ -279,7 +293,7 @@ def Download(t):
 
 # download media loop
 t = CheckMediaType()
-print(str(t))
+print(t)
 Download(t)
 # time.sleep(1)
 is_next = True
@@ -289,7 +303,7 @@ while is_next:
         next_btn: webdriver = browser.find_element(
             By.XPATH, '//*[@class="_ohf rfloat"]/a')
         next_btn_state: str = next_btn.get_attribute('aria-disabled')
-        print(next_btn_state)
+        print('Next Button State = ' + next_btn_state)
     except:
         print('Next button not found.')
 
@@ -298,7 +312,7 @@ while is_next:
         print('Next media selected...')
         time.sleep(2)
         t = CheckMediaType()
-        print(str(t))
+        print(t)
         Download(t)
     elif next_btn_state == 'true':
         print('Next media not found.')
