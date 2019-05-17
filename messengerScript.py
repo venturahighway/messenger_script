@@ -12,6 +12,7 @@ from getpass import getpass
 from getpass import getuser
 import requests
 import os
+import platform
 import time
 
 # disables notifications from chrome
@@ -21,7 +22,15 @@ options.add_experimental_option("prefs", prefs)
 # if true enables headless chrome
 options.headless = True
 
-path: str = '/Users/arlandtorres/dev/projects/messengerScript/chromedriver'
+# check current operating system and point to the correct chromedriver 
+operating_system: str = platform.system()
+current_directory: str = os.getcwd()
+if operating_system == 'Windows':
+    path: str = f'{current_directory}/chromedriver.exe'
+else:
+    path: str = f'{current_directory}/chromedriver'
+
+# path: str = '/Users/arlandtorres/dev/projects/messengerScript/chromedriver'
 # path: str = r'C:\Users\AVTORRES\messenger_script\chromedriver.exe'
 url: str = 'https://www.facebook.com'
 # creates media directory
