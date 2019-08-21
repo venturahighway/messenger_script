@@ -6,47 +6,43 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+# from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from getpass import getpass
 from getpass import getuser
 import requests
 import os
-import platform
+import sys
 import time
 
-# disables notifications from chrome
-options: Options = Options()
-prefs: dict = {"profile.default_content_setting_values.notifications": 2}
+def check_platform():
+    platform = sys.platform
+    if platform == 'win32': 
+        path = os.getcwd() + '\\chromedriver.exe'
+        desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+        return path, desktop
+    else:
+        path = os.getcwd() + '/chromedriver'
+        desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
+        return path, desktop
+
+path, parent_dir = check_platform()
+directory = 'Messenger Media'
+folder = os.path.join(parent_dir, directory)
+os.mkdir(folder)  
+
+email = input('Email: ')
+password = getpass(prompt='Password: ')
+
+options = Options()
+prefs = {"profile.default_content_setting_values.notifications": 2} # disables notifications from chrome
 options.add_experimental_option("prefs", prefs)
-# if true enables headless chrome
-options.headless = True
+options.headless = True # if true enables headless chrome
+ 
 
-# check current operating system and point to the correct chromedriver 
-operating_system: str = platform.system()
-current_directory: str = os.getcwd()
-if operating_system == 'Windows':
-    path: str = f'{current_directory}/chromedriver.exe'
-else:
-    path: str = f'{current_directory}/chromedriver'
-
-# path: str = '/Users/arlandtorres/dev/projects/messengerScript/chromedriver'
-# path: str = r'C:\Users\AVTORRES\messenger_script\chromedriver.exe'
-url: str = 'https://www.facebook.com'
-# creates media directory
-os.makedirs('media', exist_ok=True)
-
-# get user details
-user: str = getuser()
-print('Hello ' + user + '!')
-
-email: str = input('Email: ')
-password: str = getpass(prompt='Password: ')
-
-# log into facebook
-browser: webdriver = webdriver.Chrome(path, options=options)
-browser.implicitly_wait(10)
-browser.get(url)
+browser = webdriver.Chrome(path, options=options)
+browser.implicitly_wait(3)
+browser.get('https://www.facebook.com')
 try:
     login_form: webdriver = browser.find_element(By.NAME, 'email')
     login_form.send_keys(email)
@@ -90,8 +86,7 @@ except:
 try:
     conversations: list = []
     n: int = 1
-    conversation = browser.find_elements(
-        By.XPATH, '//*[@aria-label="Conversation list"]/li')
+    
 
     num_conversation = len(conversation)
     print(f'First {num_conversation} messages found:')
