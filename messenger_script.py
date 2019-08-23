@@ -21,6 +21,57 @@ def check_platform():
         desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
         return path, desktop
 
+def get_credentials():
+    '''Get Facebook credentials.'''
+    email = input('Email: ')
+    password = getpass(prompt='Password: ')
+    return email, password
+
+def setup(email, password):
+    '''Opens Chrome in headless mode and nagivates to Facebook messenger.'''
+    driver.get('https://www.facebook.com')
+    try:
+        driver.find_element_by_name('email').send_keys(email)
+        logger.debug('Login form found, sending email')
+    except NoSuchElementException:
+        logger.error('Unable to locate login form')
+    try:
+        elm_passform = driver.find_element_by_name('pass')
+        elm_passform.send_keys(password)
+        elm_passform.submit()
+        logger.debug('Password form found, sending password')
+    except NoSuchElementException:
+        logger.error('Unable to locate password form')
+
+    current_url = driver.current_url
+    if current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110':
+        logger.error('Log in unsuccessful')
+    else:
+        logger.debug('Log in successful')
+
+    try:
+        driver.find_element_by_name('mercurymessages').click()
+        driver.find_element_by_link_text('See all in Messenger').click()
+    except:
+        logger.error('Could not navigate to messenger')
+
+def find_conversations():
+    '''Prints to console a list of conversations found.'''
+    elm_conversations = driver.find_elements_by_xpath('//*[@aria-label="Conversation list"]/li')
+    names = []
+    n = 1
+
+    logger.debug(str(len(elm_conversations)) + ' Conversations found')
+
+    while n < len(elm_conversations) + 1:
+        elm_name = driver.find_element_by_xpath(f'//*[@aria-label="Conversation list"]/li[{n}]/div/a/div/div'
+            ).get_attribute('data-tooltip-content')
+        names.append(elm_name)
+        n += 1
+
+    for index, name in enumerate(names, start=1):
+        print(index, name)
+
 def get_selection():
     '''Prompt the user to choose whether or not he wants to choose from the list of conversations or if he wants to search a specific contact.
     
@@ -43,6 +94,7 @@ def check_selection(selection):
     '''Selects or searches a conversation depending on selection given.
 
     Returns name of conversation.'''
+    contacts = []
     if selection == 1:
         n = input('Please select the number that corresponds to the conversation you want to access: ')
         driver.find_element_by_xpath(f'//*[@aria-label="Conversation list"]/li[{n}]/div/a/div/div').click()
@@ -82,7 +134,7 @@ def check_selection(selection):
 def create_folder():
     '''Creates a folder with the name of the conversation on the desktop.
 
-    If the folder already exists it will create a another with (n) appended.
+    If the folder already exists it will create another folder of the same name with (n) appended.
 
     Returns folder path.'''
     folder = desktop + '\\' + name_media
@@ -147,63 +199,22 @@ def scrape(media_type):
         except NoSuchElementException:
             logger.error('Could not locate video')
 
-path, desktop = check_platform()
-email = input('Email: ')
-password = getpass(prompt='Password: ')
 t_start = timer()
+path, desktop = check_platform()
 options = Options()
 prefs = {'profile.default_content_setting_values.notifications': 2}
 options.add_experimental_option('prefs', prefs)
 options.headless = True
 driver = webdriver.Chrome(path, options=options)
 driver.maximize_window()
-driver.implicitly_wait(3)
-driver.get('https://www.facebook.com')
-
-try:
-    driver.find_element_by_name('email').send_keys(email)
-    logger.debug('Login form found, sending email')
-except NoSuchElementException:
-    logger.error('Unable to locate login form')
-try:
-    elm_passform = driver.find_element_by_name('pass')
-    elm_passform.send_keys(password)
-    elm_passform.submit()
-    logger.debug('Password form found, sending password')
-except NoSuchElementException:
-    logger.error('Unable to locate password form')
-
-current_url = driver.current_url
-if current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110':
-    logger.error('Log in unsuccessful')
-else:
-    logger.debug('Log in successful')
-
-try:
-    driver.find_element_by_name('mercurymessages').click()
-    driver.find_element_by_link_text('See all in Messenger').click()
-except:
-    logger.error('Could not navigate to messenger')
-
-elm_conversations = driver.find_elements_by_xpath('//*[@aria-label="Conversation list"]/li')
-names = []
-contacts = []
-n = 1
-
-logger.debug(str(len(elm_conversations)) + ' Conversations found')
-
-while n < len(elm_conversations) + 1:
-    elm_name = driver.find_element_by_xpath(f'//*[@aria-label="Conversation list"]/li[{n}]/div/a/div/div'
-        ).get_attribute('data-tooltip-content')
-    names.append(elm_name)
-    n += 1
-
-for index, name in enumerate(names, start=1):
-    print(index, name)
-
+driver.implicitly_wait(2)
+email, password = get_credentials()
+setup(email, password)
+find_conversations()
 selection = get_selection()
 name_media = check_selection(selection)
 
+# Selects the first instance of media on the selected conversation
 try:
     driver.find_element_by_xpath('.//*[@aria-label="photo"][1]').click()
 except NoSuchElementException:
@@ -214,6 +225,7 @@ folder_path = create_folder()
 while True:
     media_type = check_media_type()
     scrape(media_type)
+    # If next arrow is enabled, click() otherwise break loop
     if driver.find_element_by_xpath('//*[@class="_ohf rfloat"]/a').get_attribute('aria-disabled') == 'false': 
         driver.find_element_by_xpath('//*[@class="_ohf rfloat"]/a').click()
     else:
