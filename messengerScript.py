@@ -234,7 +234,7 @@ def Download(t):
 
             # save media to ./media
             img_file = open(
-                os.path.join('media', os.path.basename(img_name)), 'wb')
+                os.path.join('media', os.path.basename(img_name)),'wb')
             for chunk in res.iter_content(100000):
                 img_file.write(chunk)
             img_file.close()
