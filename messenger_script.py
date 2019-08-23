@@ -13,11 +13,11 @@ def check_platform():
     '''Checks OS and returns the correct driver and desktop path.'''
     platform = sys.platform
     if platform == 'win32': 
-        path = os.getcwd() + '\\chromedriver.exe'
+        path = os.getcwd() + 'drivers\\chromedriver.exe'
         desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
         return path, desktop
     else:
-        path = os.getcwd() + '/chromedriver'
+        path = os.getcwd() + 'drivers/chromedriver'
         desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
         return path, desktop
 
