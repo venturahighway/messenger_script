@@ -175,7 +175,7 @@ def scrape(media_type):
             file_name = url_part[url_part.rfind('/'):]
             res = requests.get(src)
             res.raise_for_status()
-            # save file to Messenger Media folder
+            # save file to conversation folder
             file = open(os.path.join(folder_path, os.path.basename(file_name)),'wb')
             for chunk in res.iter_content(100_000):
                 file.write(chunk)
@@ -202,8 +202,8 @@ def scrape(media_type):
 t_start = timer()
 path, desktop = check_platform()
 options = Options()
-prefs = {'profile.default_content_setting_values.notifications': 2}
-options.add_experimental_option('prefs', prefs)
+# Disables Facebook notifications
+options.add_experimental_option('prefs', {'profile.default_content_setting_values.notifications': 2})
 options.headless = True
 driver = webdriver.Chrome(path, options=options)
 driver.maximize_window()
