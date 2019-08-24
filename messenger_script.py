@@ -24,7 +24,9 @@ def check_platform():
         return path, desktop
 
 def get_credentials():
-    '''Get Facebook credentials.'''
+    '''Get Facebook credentials.
+    
+    Prompts the user for email and password.'''
     email = input('Email: ')
     password = getpass(prompt='Password: ')
     try:
@@ -42,6 +44,9 @@ def get_credentials():
     return email
 
 def confirm_login(email):
+    '''Compares the current url with the given urls to test for failed login pages.
+    
+    Returns 1 for failed and 2 for successful.'''
     current_url = driver.current_url
     if current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110':
         logger.error('Log in unsuccessful, please re-enter your email and password')
@@ -57,6 +62,7 @@ def confirm_login(email):
         return 2
 
 def get_credentials_failed_login():
+    '''If login unsuccessful, prompts user to re-enter login details.'''
     email = input('Email: ')
     password = getpass(prompt='Password: ')
     try:
@@ -71,7 +77,6 @@ def get_credentials_failed_login():
         logger.debug('Password form found, sending password')
     except NoSuchElementException:
         logger.error('Unable to locate password form')
-
 
 def setup():
     '''Opens Chrome in headless mode and nagivates to Facebook messenger.'''
@@ -88,7 +93,6 @@ def setup():
                 break
     elif n == 2:
         pass
-        
     try:
         driver.find_element_by_name('mercurymessages').click()
         driver.find_element_by_link_text('See all in Messenger').click()
