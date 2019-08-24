@@ -30,42 +30,6 @@ def get_credentials():
     email = input('Email: ')
     password = getpass(prompt='Password: ')
     try:
-        driver.find_element_by_name('email').send_keys(email)
-        logger.debug('Login form found, sending email')
-    except NoSuchElementException:
-        logger.error('Unable to locate login form')
-    try:
-        elm_passform = driver.find_element_by_name('pass')
-        elm_passform.send_keys(password)
-        elm_passform.submit()
-        logger.debug('Password form found, sending password')
-    except NoSuchElementException:
-        logger.error('Unable to locate password form')
-    return email
-
-def confirm_login(email):
-    '''Compares the current url with the given urls to test for failed login pages.
-    
-    Returns 1 for failed and 2 for successful.'''
-    current_url = driver.current_url
-    if current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110':
-        logger.error('Log in unsuccessful, please re-enter your email and password')
-        return 1
-    elif current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&next=https%3A%2F%2Fwww.facebook.com%2F&lwv=120&lwc=1348092':
-        logger.error('Log in unsuccessful, please re-enter your email and password')
-        return 1
-    elif current_url == f'https://www.facebook.com/login/help.php?email={email}&st=h_noacct&lwv=120&lwc=1348028':
-        driver.find_element_by_xpath('//*[@id="u_0_9"]/div/div[3]/div/div[1]/a[1]').click()
-        return 1
-    else:
-        logger.debug('Login successful')
-        return 2
-
-def get_credentials_failed_login():
-    '''If login unsuccessful, prompts user to re-enter login details.'''
-    email = input('Email: ')
-    password = getpass(prompt='Password: ')
-    try:
         driver.find_element_by_id('email').send_keys(email)
         logger.debug('Login form found, sending email')
     except NoSuchElementException:
@@ -73,26 +37,40 @@ def get_credentials_failed_login():
     try:
         elm_passform = driver.find_element_by_id('pass')
         elm_passform.send_keys(password)
-        elm_passform.submit()
         logger.debug('Password form found, sending password')
+        elm_passform.submit()
     except NoSuchElementException:
         logger.error('Unable to locate password form')
+    return email
+
+def confirm_login():
+    '''Compares the current url with the given urls to test for failed login pages.
+    
+    Returns True if failed and False if successful.'''
+    current_url = driver.current_url
+    if current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110':
+        logger.error('Log in unsuccessful, please re-enter your email and password')
+        return True
+    elif current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&next=https%3A%2F%2Fwww.facebook.com%2F&lwv=120&lwc=1348092':
+        logger.error('Log in unsuccessful, please re-enter your email and password')
+        return True
+    # elif current_url == f'https://www.facebook.com/login/help.php?email={email}&st=h_noacct&lwv=120&lwc=1348028':
+    #     driver.find_element_by_xpath('//*[@id="u_0_9"]/div/div[3]/div/div[1]/a[1]').click()
+    #     return True
+    else:
+        logger.debug('Login successful')
+        return False
 
 def setup():
     '''Opens Chrome in headless mode and nagivates to Facebook messenger.'''
     driver.get('https://www.facebook.com')
-    email = get_credentials()
-    n = confirm_login(email)
-    if n == 1:
-        while True:
-            get_credentials_failed_login()
-            n = confirm_login(email)
-            if n == 1:
-                continue
-            elif n == 2:
-                break
-    elif n == 2:
-        pass
+    while True:
+        get_credentials()
+        failed = confirm_login()
+        if failed == True:
+            continue
+        elif failed == False:
+            break
     try:
         driver.find_element_by_name('mercurymessages').click()
         driver.find_element_by_link_text('See all in Messenger').click()
@@ -175,26 +153,26 @@ def check_selection(selection):
             driver.find_element_by_xpath(f'//*[@class="_11_d _705p _4p-s"]/div[2]/ul/li[{n}]/a/div/div[2]/div/div').click()
             return driver.find_element_by_xpath(f'//*[@class="_11_d _705p _4p-s"]/div[2]/ul/li[{n}]/a/div/div[2]/div/div').text
 
-def create_folder():
+def create_folder(conversation_name):
     '''Creates a folder with the name of the conversation on the desktop.
 
     If the folder already exists it will create another folder of the same name with (n) appended.
 
     Returns folder path.'''
-    folder = desktop + '\\' + name_media
+    folder = desktop + '\\' + conversation_name
     n = 1
     if os.path.isdir(folder) == True:
         while True:
             try:
-                os.mkdir(os.path.join(desktop, name_media + '(' + str(n) + ')'))
+                os.mkdir(os.path.join(desktop, conversation_name + '(' + str(n) + ')'))
                 break
             except OSError:
                 n += 1
                 continue
-        return os.path.join(desktop, name_media + '(' + str(n) + ')')
+        return os.path.join(desktop, conversation_name + '(' + str(n) + ')')
     else:
-        os.mkdir(os.path.join(desktop, name_media))
-        return os.path.join(desktop, name_media)
+        os.mkdir(os.path.join(desktop, conversation_name))
+        return os.path.join(desktop, conversation_name)
         
 def check_media_type():
     '''Checks whether if the media selected is an image or video.
@@ -248,14 +226,14 @@ path, desktop = check_platform()
 options = Options()
 # Disables Facebook notifications
 options.add_experimental_option('prefs', {'profile.default_content_setting_values.notifications': 2})
-options.headless = True
+# options.headless = True
 driver = webdriver.Chrome(path, options=options)
 driver.maximize_window()
 driver.implicitly_wait(2)
 setup()
 find_conversations()
 selection = get_selection()
-name_media = check_selection(selection)
+conversation_name = check_selection(selection)
 
 # Selects the first instance of media on the selected conversation
 try:
@@ -263,7 +241,7 @@ try:
 except NoSuchElementException:
     logger.error('Could not locate media')
 
-folder_path = create_folder()
+folder_path = create_folder(conversation_name)
 
 while True:
     media_type = check_media_type()
