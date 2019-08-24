@@ -9,6 +9,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from timeit import default_timer as timer
 
+# TODO: complete log in fail loop
+
 def check_platform():
     '''Checks OS and returns the correct driver and desktop path.'''
     platform = sys.platform
@@ -25,11 +27,6 @@ def get_credentials():
     '''Get Facebook credentials.'''
     email = input('Email: ')
     password = getpass(prompt='Password: ')
-    return email, password
-
-def setup(email, password):
-    '''Opens Chrome in headless mode and nagivates to Facebook messenger.'''
-    driver.get('https://www.facebook.com')
     try:
         driver.find_element_by_name('email').send_keys(email)
         logger.debug('Login form found, sending email')
@@ -42,13 +39,56 @@ def setup(email, password):
         logger.debug('Password form found, sending password')
     except NoSuchElementException:
         logger.error('Unable to locate password form')
+    return email
 
+def confirm_login(email):
     current_url = driver.current_url
     if current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110':
-        logger.error('Log in unsuccessful')
+        logger.error('Log in unsuccessful, please re-enter your email and password')
+        return 1
+    elif current_url == 'https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&next=https%3A%2F%2Fwww.facebook.com%2F&lwv=120&lwc=1348092':
+        logger.error('Log in unsuccessful, please re-enter your email and password')
+        return 1
+    elif current_url == f'https://www.facebook.com/login/help.php?email={email}&st=h_noacct&lwv=120&lwc=1348028':
+        driver.find_element_by_xpath('//*[@id="u_0_9"]/div/div[3]/div/div[1]/a[1]').click()
+        return 1
     else:
-        logger.debug('Log in successful')
+        logger.debug('Login successful')
+        return 2
 
+def get_credentials_failed_login():
+    email = input('Email: ')
+    password = getpass(prompt='Password: ')
+    try:
+        driver.find_element_by_id('email').send_keys(email)
+        logger.debug('Login form found, sending email')
+    except NoSuchElementException:
+        logger.error('Unable to locate login form')
+    try:
+        elm_passform = driver.find_element_by_id('pass')
+        elm_passform.send_keys(password)
+        elm_passform.submit()
+        logger.debug('Password form found, sending password')
+    except NoSuchElementException:
+        logger.error('Unable to locate password form')
+
+
+def setup():
+    '''Opens Chrome in headless mode and nagivates to Facebook messenger.'''
+    driver.get('https://www.facebook.com')
+    email = get_credentials()
+    n = confirm_login(email)
+    if n == 1:
+        while True:
+            get_credentials_failed_login()
+            n = confirm_login(email)
+            if n == 1:
+                continue
+            elif n == 2:
+                break
+    elif n == 2:
+        pass
+        
     try:
         driver.find_element_by_name('mercurymessages').click()
         driver.find_element_by_link_text('See all in Messenger').click()
@@ -208,8 +248,7 @@ options.headless = True
 driver = webdriver.Chrome(path, options=options)
 driver.maximize_window()
 driver.implicitly_wait(2)
-email, password = get_credentials()
-setup(email, password)
+setup()
 find_conversations()
 selection = get_selection()
 name_media = check_selection(selection)
