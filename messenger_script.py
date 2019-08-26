@@ -9,8 +9,6 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from timeit import default_timer as timer
 
-# TODO: complete log in fail loop
-
 def check_platform():
     '''Checks OS and returns the correct driver and desktop path.'''
     platform = sys.platform
@@ -240,6 +238,7 @@ try:
     driver.find_element_by_xpath('.//*[@aria-label="photo"][1]').click()
 except NoSuchElementException:
     logger.error('Could not locate media')
+    # TODO: if no media, let user select a different conversation or quit script
 
 folder_path = create_folder(conversation_name)
 
