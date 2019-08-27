@@ -1,10 +1,12 @@
+# TODO: if no media, let user select a different conversation or quit script
+
 import os
 import requests
 import sys
 import time
 from getpass import getpass
 from loguru import logger
-from selenium import webdriver
+from selenium.webdriver import Chrome
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from timeit import default_timer as timer
@@ -225,34 +227,33 @@ options = Options()
 # Disables Facebook notifications
 options.add_experimental_option('prefs', {'profile.default_content_setting_values.notifications': 2})
 # options.headless = True
-driver = webdriver.Chrome(path, options=options)
-driver.maximize_window()
-driver.implicitly_wait(2)
-setup()
-find_conversations()
-selection = get_selection()
-conversation_name = check_selection(selection)
+with Chrome(path, options=options) as driver:
+    driver.maximize_window()
+    driver.implicitly_wait(2)
+    setup()
+    find_conversations()
+    selection = get_selection()
+    conversation_name = check_selection(selection)
 
-# Selects the first instance of media on the selected conversation
-try:
-    driver.find_element_by_xpath('.//*[@aria-label="photo"][1]').click()
-except NoSuchElementException:
-    logger.error('Could not locate media')
-    # TODO: if no media, let user select a different conversation or quit script
+    # Selects the first instance of media on the selected conversation
+    try:
+        driver.find_element_by_xpath('.//*[@aria-label="photo"][1]').click()
+    except NoSuchElementException:
+        logger.error('Could not locate media')
+        
 
-folder_path = create_folder(conversation_name)
+    folder_path = create_folder(conversation_name)
 
-while True:
-    media_type = check_media_type()
-    scrape(media_type)
-    # If next arrow is enabled, click() otherwise break loop
-    if driver.find_element_by_xpath('//*[@class="_ohf rfloat"]/a').get_attribute('aria-disabled') == 'false': 
-        driver.find_element_by_xpath('//*[@class="_ohf rfloat"]/a').click()
-    else:
-        logger.error('Reached last photo/video')
-        logger.debug(f'Files saved in {folder_path}')
-        break
+    while True:
+        media_type = check_media_type()
+        scrape(media_type)
+        # If next arrow is enabled, click() otherwise break loop
+        if driver.find_element_by_xpath('//*[@class="_ohf rfloat"]/a').get_attribute('aria-disabled') == 'false': 
+            driver.find_element_by_xpath('//*[@class="_ohf rfloat"]/a').click()
+        else:
+            logger.error('Reached last photo/video')
+            logger.debug(f'Files saved in {folder_path}')
+            break
 
-driver.close()
 t_end = timer()
 logger.debug('\nRan script in ' + str(t_end - t_start) + 's')
